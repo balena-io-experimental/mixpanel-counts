@@ -18,26 +18,34 @@ var panel = new MixpanelExport({
   api_secret: process.env.MIXPANEL_API_SECRET
 });
 
-var thisdate = moment().format("YYYY-MM-DD");
+var days = process.env.DAYS || 3;
+var now = moment();
+var to_date = now.format("YYYY-MM-DD");
+var from_date = now.subtract(days, "days").format("YYYY-MM-DD");
 var defaultLimit = process.env.MAXCOUNT || 30;
 
 var getReport = function(event) {
   panel
     .segmentation({
-      from_date: thisdate,
-      to_date: thisdate,
+      from_date: from_date,
+      to_date: to_date,
       event: event,
       on: 'properties["uuid"]',
       limit: defaultLimit
     })
     .then(function(data) {
-      console.log(`Event: ${event}`.bgGreen);
+      console.log(`Event: ${event} / ${days} day(s)`.bgGreen);
       if (data.error) {
         console.log(`${data.error.red}\n`);
       } else {
         var devicelist = _(data.data.values)
           .toPairs()
-          .map(kvArray => [kvArray[0], kvArray[1][thisdate]])
+          .map(kvArray => [
+            kvArray[0],
+            _(kvArray[1])
+              .values()
+              .sum()
+          ])
           .sortBy(kvArray => kvArray[1])
           .reverse()
           .value();
