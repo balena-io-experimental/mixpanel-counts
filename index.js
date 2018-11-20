@@ -31,15 +31,19 @@ var getReport = function(event) {
       limit: defaultLimit
     })
     .then(function(data) {
-      var devicelist = _(data.data.values)
-        .toPairs()
-        .map(kvArray => [kvArray[0], kvArray[1][thisdate]])
-        .sortBy(kvArray => kvArray[1])
-        .reverse()
-        .value();
       console.log(`Event: ${event}`.bgGreen);
-      _(devicelist).each(d => console.log(`${d[0].red}\t${d[1]}`));
-      console.log();
+      if (data.error) {
+        console.log(`${data.error.red}\n`);
+      } else {
+        var devicelist = _(data.data.values)
+          .toPairs()
+          .map(kvArray => [kvArray[0], kvArray[1][thisdate]])
+          .sortBy(kvArray => kvArray[1])
+          .reverse()
+          .value();
+        _(devicelist).each(d => console.log(`${d[0].cyan}\t${d[1]}`));
+        console.log();
+      }
     });
 };
 
